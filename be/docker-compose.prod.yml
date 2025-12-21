@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      target: prod
+    ports:
+      - "80:8080"
+    environment:
+      - GIN_MODE=release
+      - MONGO_URI=mongodb://prod-db-url:27017
+    restart: always

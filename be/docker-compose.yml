@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    environment:
+      - PORT=8080
+      - MONGO_URI=${MONGO_CONN}
+      - DB_NAME=${DB_NAME}
+      
+volumes:
+  mongo_data:
