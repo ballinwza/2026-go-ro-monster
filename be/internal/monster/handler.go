@@ -4,6 +4,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -47,6 +48,7 @@ func (h *Handler) ScrappingMonsters(c *gin.Context) {
 func (h *Handler) GetAllMonsters(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	name := strings.TrimSpace(c.Query("name"))
 
 	if page < 1 {
 		page = 1
@@ -56,7 +58,7 @@ func (h *Handler) GetAllMonsters(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	monsters, total, err := h.service.GetAll(ctx, page, limit)
+	monsters, total, err := h.service.GetAll(ctx, page, limit, &name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

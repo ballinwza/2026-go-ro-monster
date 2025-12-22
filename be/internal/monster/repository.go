@@ -11,7 +11,7 @@ import (
 
 type Repository interface {
 	Create(ctx context.Context, monsters []*Monster) error
-	GetAll(ctx context.Context, page, limit int) ([]*Monster, int64, error)
+	GetAll(ctx context.Context, page, limit int, name *string) ([]*Monster, int64, error)
 }
 
 type mongoRepository struct {
@@ -39,13 +39,20 @@ func (r *mongoRepository) Create(ctx context.Context, monsters []*Monster) error
 		return err
 	}
 
+	indexModel := mongo.IndexModel{Keys: bson.D{{Key: "name", Value: 1}}}
+	r.db.Indexes().CreateOne(ctx, indexModel)
+
 	return nil
 }
 
-func (r *mongoRepository) GetAll(ctx context.Context, page, limit int) ([]*Monster, int64, error) {
+func (r *mongoRepository) GetAll(ctx context.Context, page, limit int, name *string) ([]*Monster, int64, error) {
 	skip := int64((page - 1) * limit)
 	l := int64(limit)
-	filter := bson.M{}
+	filter := bson.D{}
+
+	if name != nil && *name != "" {
+		filter = bson.D{{Key: "name", Value: bson.M{"$regex": &name, "$options": "i"}}}
+	}
 
 	opts := options.Find().SetLimit(l).SetSkip(skip).SetSort(bson.D{{Key: "level", Value: 1}, {Key: "hitPoint", Value: 1}})
 	cur, err := r.db.Find(ctx, filter, opts)
