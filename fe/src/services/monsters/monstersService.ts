@@ -1,10 +1,11 @@
 import axiosInstance from "@/lib/axios"
 import { Monster } from "./model"
-import { ApiResponse, Pagination } from "../cores/model"
+import { ApiResponse } from "../cores/model"
 
 interface GetMonstersParams {
   page?: number
   limit?: number
+  name?: string
 }
 
 export const monsterService = {
