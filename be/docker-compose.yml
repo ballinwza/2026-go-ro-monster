@@ -3,6 +3,7 @@ services:
     build:
       context: .
       target: dev
+    image: go-ro-monster-dev:latest
     ports:
       - "8080:8080"
     volumes:

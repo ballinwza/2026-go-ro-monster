@@ -13,7 +13,7 @@ import (
 
 type Service interface {
 	Scrapping() ([]*Monster, error)
-	GetAll() ([]*Monster, error)
+	GetAll(ctx context.Context, page, limit int) ([]*Monster, int64, error)
 }
 
 type monsterService struct {
@@ -63,6 +63,9 @@ func (s *monsterService) Scrapping() ([]*Monster, error) {
 		exp, _ := strconv.Atoi(tds.Eq(2).Text())
 		monster.Experiance = &exp
 
+		jobExp, _ := strconv.Atoi(tds.Eq(3).Text())
+		monster.JobExperiance = &jobExp
+
 		flee, _ := strconv.Atoi(tds.Eq(4).Text())
 		monster.Flee = &flee
 
@@ -105,10 +108,10 @@ func (s *monsterService) Scrapping() ([]*Monster, error) {
 	return newList, nil
 }
 
-func (s *monsterService) GetAll() ([]*Monster, error) {
-	monsters, err := s.repo.GetAll(context.Background())
+func (s *monsterService) GetAll(ctx context.Context, page, limit int) ([]*Monster, int64, error) {
+	monsters, total, err := s.repo.GetAll(ctx, page, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return monsters, nil
+	return monsters, total, nil
 }
