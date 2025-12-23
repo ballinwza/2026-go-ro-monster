@@ -13,7 +13,7 @@ import (
 
 type Service interface {
 	Scrapping() ([]*Monster, error)
-	GetAll(ctx context.Context, page, limit int, name *string) ([]*Monster, int64, error)
+	GetAll(ctx context.Context, page, limit int, name *string, sortBy *MonsterSortField, order *int) ([]*Monster, int64, error)
 }
 
 type monsterService struct {
@@ -108,8 +108,22 @@ func (s *monsterService) Scrapping() ([]*Monster, error) {
 	return newList, nil
 }
 
-func (s *monsterService) GetAll(ctx context.Context, page, limit int, name *string) ([]*Monster, int64, error) {
-	monsters, total, err := s.repo.GetAll(ctx, page, limit, name)
+func (s *monsterService) GetAll(ctx context.Context, page, limit int, name *string, sortBy *MonsterSortField, order *int) ([]*Monster, int64, error) {
+	finalSortBy := MonsterSortField("level")
+	if sortBy != nil {
+		switch *sortBy {
+		case Name, Level, Size, Experiance, JobExperiance, Race, Property:
+			finalSortBy = *sortBy
+		default:
+			finalSortBy = MonsterSortField("level")
+		}
+	}
+	if order == nil || (*order != 1 && *order != -1) {
+		defaultOrder := 1
+		order = &defaultOrder
+	}
+
+	monsters, total, err := s.repo.GetAll(ctx, page, limit, *order, finalSortBy, name)
 	if err != nil {
 		return nil, 0, err
 	}

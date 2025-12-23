@@ -11,7 +11,7 @@ import (
 
 type Repository interface {
 	Create(ctx context.Context, monsters []*Monster) error
-	GetAll(ctx context.Context, page, limit int, name *string) ([]*Monster, int64, error)
+	GetAll(ctx context.Context, page, limit, order int, sortBy MonsterSortField, name *string) ([]*Monster, int64, error)
 }
 
 type mongoRepository struct {
@@ -39,13 +39,18 @@ func (r *mongoRepository) Create(ctx context.Context, monsters []*Monster) error
 		return err
 	}
 
-	indexModel := mongo.IndexModel{Keys: bson.D{{Key: "name", Value: 1}}}
-	r.db.Indexes().CreateOne(ctx, indexModel)
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "name", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "level", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "size", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "experiance", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "jobExperiance", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "race", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "property", Value: 1}}})
 
 	return nil
 }
 
-func (r *mongoRepository) GetAll(ctx context.Context, page, limit int, name *string) ([]*Monster, int64, error) {
+func (r *mongoRepository) GetAll(ctx context.Context, page, limit, order int, sortBy MonsterSortField, name *string) ([]*Monster, int64, error) {
 	skip := int64((page - 1) * limit)
 	l := int64(limit)
 	filter := bson.D{}
@@ -54,7 +59,11 @@ func (r *mongoRepository) GetAll(ctx context.Context, page, limit int, name *str
 		filter = bson.D{{Key: "name", Value: bson.M{"$regex": &name, "$options": "i"}}}
 	}
 
-	opts := options.Find().SetLimit(l).SetSkip(skip).SetSort(bson.D{{Key: "level", Value: 1}, {Key: "hitPoint", Value: 1}})
+	opts := options.Find()
+	opts.SetLimit(l)
+	opts.SetSkip(skip)
+	opts.SetSort(bson.D{{Key: string(sortBy), Value: order}})
+
 	cur, err := r.db.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, 0, err

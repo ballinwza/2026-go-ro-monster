@@ -49,6 +49,8 @@ func (h *Handler) GetAllMonsters(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	name := strings.TrimSpace(c.Query("name"))
+	sortBy := MonsterSortField(strings.TrimSpace(c.Query("sortBy")))
+	order, _ := strconv.Atoi(c.Query("order"))
 
 	if page < 1 {
 		page = 1
@@ -58,7 +60,7 @@ func (h *Handler) GetAllMonsters(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	monsters, total, err := h.service.GetAll(ctx, page, limit, &name)
+	monsters, total, err := h.service.GetAll(ctx, page, limit, &name, &sortBy, &order)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

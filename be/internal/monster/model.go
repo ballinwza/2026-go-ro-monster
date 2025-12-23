@@ -17,3 +17,15 @@ type Monster struct {
 	Def           *int    `json:"def,omitempty" bson:"def,omitempty"`
 	Mdef          *int    `json:"mdef,omitempty" bson:"mdef,omitempty"`
 }
+
+type MonsterSortField string
+
+const (
+	Name          MonsterSortField = "name"
+	Level         MonsterSortField = "level"
+	Size          MonsterSortField = "size"
+	Experiance    MonsterSortField = "experiance"
+	JobExperiance MonsterSortField = "jobExperiance"
+	Race          MonsterSortField = "race"
+	Property      MonsterSortField = "property"
+)
