@@ -32,6 +32,12 @@ func main() {
 	monsterService := monster.NewService(monsterRepo)
 	monsterHandler := monster.NewHandler(monsterService)
 
+	if cfg.Mode == onProduction {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
+
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -50,12 +56,6 @@ func main() {
 		c.Next()
 	})
 	r.SetTrustedProxies(nil)
-
-	if cfg.Mode == onProduction {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
-		gin.SetMode(gin.DebugMode)
-	}
 
 	v1 := r.Group("/api/v1")
 	if cfg.Mode == onProduction {
