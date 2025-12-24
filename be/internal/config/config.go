@@ -11,6 +11,9 @@ type Config struct {
 	Port     string
 	MongoURI string
 	DBName   string
+	Mode     string
+	FeDomain string
+	XApiKey  string
 }
 
 func LoadConfig() *Config {
@@ -23,6 +26,9 @@ func LoadConfig() *Config {
 		Port:     getEnv("PORT", "8080"),
 		MongoURI: getEnv("MONGO_CONN", ""),
 		DBName:   getEnv("DB_NAME", ""),
+		Mode:     getEnv("MODE", "development"),
+		FeDomain: getEnv("FE_DOMAIN", "http://localhost:3000"),
+		XApiKey:  getEnv("X_API_KEY", ""),
 	}
 }
 
