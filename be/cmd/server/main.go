@@ -59,7 +59,7 @@ func main() {
 
 	v1 := r.Group("/api/v1")
 	if cfg.Mode == onProduction {
-		v1.Use(middleware.XApiKeyAuth())
+		v1.Use(middleware.XApiKeyGuard())
 	}
 	{
 		monsterHandler.MonsterRoutes(v1)
