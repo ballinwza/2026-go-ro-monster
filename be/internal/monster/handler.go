@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ballinwza/2026-go-ro-monster/be/internal/config"
+	"github.com/ballinwza/2026-go-ro-monster/be/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,11 +20,15 @@ func NewHandler(s Service) *Handler {
 }
 
 func (h *Handler) MonsterRoutes(router *gin.RouterGroup) {
+	cfg := config.LoadConfig()
 	monsters := router.Group("/monsters")
 	{
 		monsters.GET("/", h.GetMonster)
-		monsters.GET("/scrapping", h.ScrappingMonsters)
 		monsters.GET("/all", h.GetAllMonsters)
+
+		if cfg.Mode == "development" {
+			monsters.GET("/scrapping", middleware.OnlyDevGuard(), h.ScrappingMonsters)
+		}
 	}
 }
 

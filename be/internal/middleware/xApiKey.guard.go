@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func XApiKeyAuth() gin.HandlerFunc {
+func XApiKeyGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		apiKey := c.GetHeader("X-API-KEY")
+		apiKey := c.GetHeader("x-api-key")
 
 		requiredKey := config.LoadConfig().XApiKey
 
