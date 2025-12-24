@@ -39,7 +39,7 @@ interface MonsterResponse {
 export const monsterService = {
   getAll: async (params: GetMonstersParams) => {
     const response = await axiosInstance.get<ApiResponse<MonsterResponse[]>>(
-      "/monsters/all",
+      "api/v1/monsters/all",
       {
         params,
       }
