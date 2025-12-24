@@ -3,15 +3,15 @@ package monster
 import (
 	"context"
 	"errors"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Repository interface {
 	Create(ctx context.Context, monsters []*Monster) error
-	GetAll(ctx context.Context) ([]*Monster, error)
+	GetAll(ctx context.Context, page, limit, order int, sortBy MonsterSortField, name *string) ([]*Monster, int64, error)
 }
 
 type mongoRepository struct {
@@ -39,31 +39,47 @@ func (r *mongoRepository) Create(ctx context.Context, monsters []*Monster) error
 		return err
 	}
 
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "name", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "level", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "size", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "experiance", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "jobExperiance", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "race", Value: 1}}})
+	r.db.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "property", Value: 1}}})
+
 	return nil
 }
 
-func (r *mongoRepository) GetAll(ctx context.Context) ([]*Monster, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+func (r *mongoRepository) GetAll(ctx context.Context, page, limit, order int, sortBy MonsterSortField, name *string) ([]*Monster, int64, error) {
+	skip := int64((page - 1) * limit)
+	l := int64(limit)
+	filter := bson.D{}
 
-	cur, err := r.db.Find(ctx, bson.D{})
+	if name != nil && *name != "" {
+		filter = bson.D{{Key: "name", Value: bson.M{"$regex": &name, "$options": "i"}}}
+	}
+
+	opts := options.Find()
+	opts.SetLimit(l)
+	opts.SetSkip(skip)
+	opts.SetSort(bson.D{{Key: string(sortBy), Value: order}})
+
+	cur, err := r.db.Find(ctx, filter, opts)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer cur.Close(ctx)
 
 	monsters := []*Monster{}
-	for cur.Next(ctx) {
-		var result *Monster
-		err := cur.Decode(&result)
-		if err != nil {
-
-		}
-
-		monsters = append(monsters, result)
+	if err := cur.All(ctx, &monsters); err != nil {
+		return nil, 0, err
 	}
 
-	return monsters, nil
+	total, err := r.db.CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return monsters, total, nil
 }
 
 func checkingEmpty(monsters []*Monster) []interface{} {

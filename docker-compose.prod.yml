@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  be:
+    build:
+      context: ./be
+      target: runner
+    image: go-ro-monster-be-prod:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - GIN_MODE=release
+      - MONGO_URI=${MONGO_CONN}
+      - DB_NAME=${DB_NAME}
+    restart: always
+  fe:
+    build:
+      context: ./fe
+      target: runner
+    image: go-ro-monster-fe-prod:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URI}
+    restart: always
+    depends_on:
+      - be

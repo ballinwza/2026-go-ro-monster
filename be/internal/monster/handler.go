@@ -1,7 +1,10 @@
 package monster
 
 import (
+	"math"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,7 +46,21 @@ func (h *Handler) ScrappingMonsters(c *gin.Context) {
 }
 
 func (h *Handler) GetAllMonsters(c *gin.Context) {
-	monsters, err := h.service.GetAll()
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	name := strings.TrimSpace(c.Query("name"))
+	sortBy := MonsterSortField(strings.TrimSpace(c.Query("sortBy")))
+	order, _ := strconv.Atoi(c.Query("order"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	ctx := c.Request.Context()
+	monsters, total, err := h.service.GetAll(ctx, page, limit, &name, &sortBy, &order)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -52,5 +69,11 @@ func (h *Handler) GetAllMonsters(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 		"data":   monsters,
+		"pagination": gin.H{
+			"total":       total,
+			"currentPage": page,
+			"perPage":     limit,
+			"totalPage":   math.Ceil(float64(total) / float64(limit)),
+		},
 	})
 }

@@ -1,0 +1,32 @@
+services:
+  # Backend API (Go)
+  be:
+    build:
+      context: ./be
+      target: dev
+    image: go-ro-monster-be-dev:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./be:/app
+    environment:
+      - PORT=8080
+      - MONGO_URI=${MONGO_CONN}
+      - DB_NAME=${DB_NAME}
+  # Frontend Web (Next.js)
+  fe:
+    build:
+      context: ./fe
+      target: dev
+    image: go-ro-monster-fe-dev:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./fe:/app
+      - /app/node_modules
+    command: pnpm dev --webpack
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URI}
+      - WATCHPACK_POLLING=true # ช่วยเรื่อง Hot Reload ใน Docker บน Windows
+    depends_on:
+      - be
