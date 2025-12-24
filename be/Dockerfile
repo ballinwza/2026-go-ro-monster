@@ -14,10 +14,10 @@ CMD ["air", "-c", ".air.toml"]
 # --- Builder Stage (คอมไพล์เพื่อ prod) ---
 FROM base AS builder
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server/main.go
 
 # --- Production Runner Stage ---
-FROM alpine:latest AS prod
+FROM alpine:latest AS runner
 WORKDIR /app
 COPY --from=builder /app/main .
 EXPOSE 8080
