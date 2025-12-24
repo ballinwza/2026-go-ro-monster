@@ -1,28 +1,26 @@
 import Card from "@mui/material/Card"
-import CardActions from "@mui/material/CardActions"
 import CardContent from "@mui/material/CardContent"
 import CardMedia from "@mui/material/CardMedia"
-import Button from "@mui/material/Button"
 import Typography from "@mui/material/Typography"
 import { Fragment, ReactNode } from "react"
 import { Grid } from "@mui/material"
 
 interface Props {
   name: string
-  image?: string
-  level?: number
-  hitPoint?: number
-  experiance?: number
-  jobExperiance?: number
-  flee?: number
-  hit?: number
-  race?: string
-  property?: string
-  size?: string
-  minAtk?: number
-  maxAtk?: number
-  def?: number
-  mdef?: number
+  image: string
+  level: number
+  hitPoint: string
+  experiance: string
+  jobExperiance: string
+  flee: string
+  hit: string
+  race: string
+  property: string
+  size: string
+  minAtk: string
+  maxAtk: string
+  def: string
+  mdef: string
 }
 
 export default function MonsterCard(props: Props): ReactNode {
@@ -41,9 +39,7 @@ export default function MonsterCard(props: Props): ReactNode {
         {monsterItem(
           "ATK",
           props.minAtk && props.maxAtk
-            ? `${Intl.NumberFormat().format(
-                props.minAtk
-              )} - ${Intl.NumberFormat().format(props.maxAtk)}`
+            ? `${props.minAtk} - ${props.maxAtk}`
             : undefined
         )}
         {monsterItem("DEF", props.def)}
@@ -68,10 +64,6 @@ export default function MonsterCard(props: Props): ReactNode {
           {renderAllMonsterDetails()}
         </Grid>
       </CardContent>
-
-      <CardActions>
-        <Button size="small">ADD</Button>
-      </CardActions>
     </Card>
   )
 }
